@@ -60,3 +60,18 @@ def add_movie():
     return render_template('add_movie.html',
                            form=form,
                            request_data=request_data)
+
+
+@app.route('/reviews')
+def reviews():
+    reviews = Review.query.order_by(Review.created_date.desc()).all()
+    return render_template('reviews.html',
+                           reviews=reviews)
+
+
+@app.route('/delete_review/<int:id>')
+def delete_review(id):
+    review = Review.query.get_or_404(id)
+    db.session.delete(review)
+    db.session.commit()
+    return redirect(url_for('reviews'))
