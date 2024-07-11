@@ -1,0 +1,10 @@
+<h1 class="mt-5 display-1"><a href="/" class="text-decoration-none">MovieReviews</a></h1>
+<p class="lead">Пишите отзывы к фильмам!</p>
+<div>
+{% if current_user.is_authenticated %}
+  <span class="navbar-text">Вы залогинены как администратор: {{ current_user.name }}</span>
+  <a class="btn btn-primary" href="{{ url_for('reviews') }}">Редактировать комментарии</a>
+  <a class="btn btn-primary" href="{{ url_for('logout') }}">Выход</a>
+{% endif %}
+</div>
+<hr>
