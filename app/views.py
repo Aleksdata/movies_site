@@ -1,14 +1,16 @@
 import os
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 
 from . import app, db
-from .forms import ReviewForm, MovieForm
-from .models import Movie, Review
+from .forms import ReviewForm, MovieForm, LoginForm
+from .models import Movie, Review, User
 
 
 UPLOAD_PATH = os.path.join(app.root_path, 'static/images/')
+
 
 @app.route('/')
 def index():
@@ -63,15 +65,39 @@ def add_movie():
 
 
 @app.route('/reviews')
+@login_required
 def reviews():
     reviews = Review.query.order_by(Review.created_date.desc()).all()
     return render_template('reviews.html',
                            reviews=reviews)
 
-
 @app.route('/delete_review/<int:id>')
+@login_required
 def delete_review(id):
     review = Review.query.get_or_404(id)
     db.session.delete(review)
     db.session.commit()
     return redirect(url_for('reviews'))
+
+
+@app.route('/login/', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter(User.username == form.username.data).first()
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=form.remember.data)
+            flash('Вход выполнен!', 'alert-success')
+            return redirect(url_for('index'))
+        else:
+            flash('Вход не выполнен!', 'alert-danger')
+    return render_template('login.html', form=form)
+
+
+@app.route('/logout/')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
