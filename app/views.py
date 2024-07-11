@@ -1,9 +1,14 @@
+import os
+
 from flask import Flask, render_template, request, redirect, url_for
+from werkzeug.utils import secure_filename
 
 from . import app, db
 from .forms import ReviewForm, MovieForm
 from .models import Movie, Review
 
+
+UPLOAD_PATH = os.path.join(app.root_path, 'static/images/')
 
 @app.route('/')
 def index():
@@ -37,13 +42,21 @@ def movie(id):
 @app.route('/add_movie', methods=['GET', 'POST'])
 def add_movie():
     form = MovieForm()
+    request_data = request.data
     if form.validate_on_submit():
         movie = Movie()
         movie.title = form.title.data
         movie.description = form.description.data
-        movie.image = form.image.data
+
+        image_file = form.image.data
+        filename = secure_filename(image_file.filename)
+        movie.image = filename
+        filepath = os.path.join(UPLOAD_PATH, filename)
+        image_file.save(filepath)
+
         db.session.add(movie)
         db.session.commit()
         return redirect(url_for('movie', id=movie.id))
     return render_template('add_movie.html',
-                           form=form)
+                           form=form,
+                           request_data=request_data)

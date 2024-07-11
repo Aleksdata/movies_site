@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
   <h1 class="mt-3 display-4">Добавить фильм</h1>
+<h1>{{ request_data }}</h1>
   <form method="POST" action="" enctype="multipart/form-data" novalidate>
     {{ form.csrf_token }}
     <div class="mb-3">
